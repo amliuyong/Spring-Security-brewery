@@ -485,8 +485,17 @@ public class JpaUserDetailsService implements UserDetailsService {
  ## EventListener
 
  ```java 
- 
- @Slf4j
+
+ @Configuration
+public class SecurityBeans {
+   @Bean
+   public AuthenticationEventPublisher authenticationEventPublisher(ApplicationEventPublisher applicationEventPublisher){
+       return new DefaultAuthenticationEventPublisher(applicationEventPublisher);
+   }
+ }
+   
+   
+@Slf4j
 @RequiredArgsConstructor
 @Component
 public class AuthenticationSuccessListener {
