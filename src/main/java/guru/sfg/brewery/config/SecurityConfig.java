@@ -1,6 +1,5 @@
 package guru.sfg.brewery.config;
 
-import guru.sfg.brewery.security.SfgPasswordEncoderFactories;
 import guru.sfg.brewery.security.google.Google2faFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -10,7 +9,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.data.repository.query.SecurityEvaluationContextExtension;
 import org.springframework.security.web.authentication.rememberme.PersistentTokenRepository;
 import org.springframework.security.web.session.SessionManagementFilter;
@@ -40,7 +38,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
                 http.addFilterBefore(google2faFilter, SessionManagementFilter.class);
 
-                http
+                http.cors().and()
                 .authorizeRequests(authorize -> {
                     authorize
                             .antMatchers("/h2-console/**").permitAll() //do not use in production!
@@ -77,10 +75,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
                 http.headers().frameOptions().sameOrigin();
     }
 
-    @Bean
-    PasswordEncoder passwordEncoder(){
-        return SfgPasswordEncoderFactories.createDelegatingPasswordEncoder();
-    }
 
    // @Override
  //   protected void configure(AuthenticationManagerBuilder auth) throws Exception {
