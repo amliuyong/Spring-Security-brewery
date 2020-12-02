@@ -731,7 +731,7 @@ logging.level.org.springframework.security=error
 ```
 
 ## CommandLineRunner - load data
-```
+```java
 @RequiredArgsConstructor
 @Component
 public class DefaultBreweryLoader implements CommandLineRunner {
@@ -962,4 +962,76 @@ public class DefaultBreweryLoader implements CommandLineRunner {
 
 }
 
+```
+## UserController  - getUser
+```java
+
+@Slf4j
+@RequestMapping("/user")
+@Controller
+@RequiredArgsConstructor
+public class UserController {
+
+    private final UserRepository userRepository;
+    private final GoogleAuthenticator googleAuthenticator;
+
+    @GetMapping("/register2fa")
+    public String register2fa(Model model){
+
+        User user = getUser();
+
+        String url = GoogleAuthenticatorQRGenerator.getOtpAuthURL("SFG", user.getUsername(),
+                googleAuthenticator.createCredentials(user.getUsername()));
+
+        log.debug("Google QR URL: " + url);
+
+        model.addAttribute("googleurl", url);
+
+        return "user/register2fa";
+    }
+
+    @PostMapping("/register2fa")
+    public String confirm2Fa(@RequestParam Integer verifyCode){
+
+        User user = getUser();
+
+        log.debug("Entered Code is:" + verifyCode);
+
+        if (googleAuthenticator.authorizeUser(user.getUsername(), verifyCode)) {
+            User savedUser = userRepository.findById(user.getId()).orElseThrow();
+            savedUser.setUseGoogle2f(true);
+            userRepository.save(savedUser);
+
+            return "/index";
+        } else {
+            // bad code
+            return "user/register2fa";
+        }
+    }
+
+    @GetMapping("/verify2fa")
+    public String verify2fa(){
+        return "user/verify2fa";
+    }
+
+    @PostMapping("/verify2fa")
+    public String verifyPostOf2Fa(@RequestParam Integer verifyCode){
+
+        User user = getUser();
+
+        if (googleAuthenticator.authorizeUser(user.getUsername(), verifyCode)) {
+            ((User)SecurityContextHolder.getContext().getAuthentication().getPrincipal()).setGoogle2faRequired(false);
+
+            return "/index";
+        } else {
+            return "user/verify2fa";
+        }
+    }
+
+    private User getUser() {
+        return (User) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    }
+
+
+}
 ```
