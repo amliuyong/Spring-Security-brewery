@@ -1037,7 +1037,40 @@ public class UserController {
 ```
 
 ## SpringBootTest
-```
+```java
+
+public abstract class BaseIT {
+    @Autowired
+    WebApplicationContext wac;
+
+    protected MockMvc mockMvc;
+
+    @BeforeEach
+    public void setup() {
+        mockMvc = MockMvcBuilders
+                .webAppContextSetup(wac)
+                .apply(springSecurity())
+                .build();
+    }
+
+    public static Stream<Arguments> getStreamAdminCustomer() {
+        return Stream.of(Arguments.of("spring" , "guru"),
+                Arguments.of("scott", "tiger"));
+    }
+
+    public static Stream<Arguments> getStreamAllUsers() {
+        return Stream.of(Arguments.of("spring" , "guru"),
+                Arguments.of("scott", "tiger"),
+                Arguments.of("user", "password"));
+    }
+
+    public static Stream<Arguments> getStreamNotAdmin() {
+        return Stream.of(Arguments.of("scott", "tiger"),
+                Arguments.of("user", "password"));
+    }
+}
+
+
 @SpringBootTest
 public class CorsIT extends BaseIT {
     @WithUserDetails("spring")
